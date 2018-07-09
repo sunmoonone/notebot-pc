@@ -50,6 +50,9 @@ export default {
 
 
 <style lang="scss" scoped>
+.v-navigation-drawer{
+	padding:0px
+}
 .icon-bar {
 	padding-left: 10px;
 	padding-top: 30px;

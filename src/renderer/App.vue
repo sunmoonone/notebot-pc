@@ -1,11 +1,8 @@
 <template>
-<v-app id="app" 
-	@keydown.ctrl.80.exact.stop="dialog = true"
-	dark
->
+<v-app id="app" dark>
   <nb-nav></nb-nav>
   <nb-main></nb-main>
-  <nb-search :dialog="dialog"></nb-search>
+  <nb-search></nb-search>
 </v-app>
 </template>
 
@@ -14,6 +11,7 @@ import NavBar from './components/NavBar'
 import Main from './components/Main'
 import SearchPane from './components/SearchPane'
 import DefaultSettings from './Settings'
+import {EventBus} from './components/Event'
 
 export default {
   name: 'notebot',
@@ -25,7 +23,6 @@ export default {
   data: () => ({
     items: [{ icon: '$vuetify.icons.cancel', title: 'helloworld' }],
     links: [{ link: 'http://www.baidu.com' }],
-    dialog: false,
     keyMap: []
   }),
   props: {
@@ -33,46 +30,34 @@ export default {
   },
   methods: {
     onkeyup (e) {
-      /*
-	    altKey : false
-		ctrlKey : false
-		metaKey : false
-		shiftKey : false
-		key : "p"
-		code : "KeyP"
-		keyCode : 80
-		which : 80
-		*/
-      if (e.which === 17 || e.which === 16 || e.which === 18 || e.which === 27) {
-        this.keyMap = {}
-      } else if (17 in this.keyMap) {
-        this.keyMap[17][e.which] = false
+      if (this.keyMap.indexOf(e.key) !== -1) {
+        this.keyMap.splice(this.keyMap.indexOf(e.key), 1)
       }
     },
     onkeydown (e) {
-      console.log(e)
-      if (e.which === 17) {
-        this.keyMap[17] = []
-      } else if (17 in this.keyMap) {
-        this.keyMap[17][e.which] = true
-      }
-
-      if (this.keyMap[17] && this.keyMap[17][80]) {
-        console.log('ctrl+p')
-        this.$emit('ctrl.p')
+      if ([16, 17, 18, 27].indexOf(e.which) !== -1 && this.keyMap.indexOf(e.key) === -1) {
+        this.keyMap.push(e.key)
+        this.tryEmit()
+      } else if (
+        (e.altKey || e.ctrlKey || e.shiftKey) &&
+        this.keyMap.indexOf(e.key) === -1
+      ) {
+        this.keyMap.push(e.key)
+        this.tryEmit()
       }
     },
     tryEmit () {
-      let pressed = '.'.join(this.keyMap)
+      let pressed = this.keyMap.join('.').toLowerCase()
       let km = DefaultSettings.keyMap
       for (var k of Object.keys(km)) {
         if (km[k] === pressed) {
-          this.$emit(k)
+          EventBus.$emit(k, pressed)
+          console.log('emit ' + k)
         }
       }
     }
   },
-  created () {
+  mounted () {
     document.onkeyup = this.onkeyup
     document.onkeydown = this.onkeydown
   }

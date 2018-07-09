@@ -1,8 +1,9 @@
-export const DefaultSettings = {
+export default {
   keyMap: {
-    openSearchPane: 'ctrl.p',
-    navSearchItemDown: 'ctrl.j',
-    navSearchItemUp: 'ctrl.k',
-    hideSearchPane: 'esc'
+    openSearchPane: 'control.p',
+    navSearchItemDown: 'control.j',
+    navSearchItemUp: 'control.k',
+    hideSearchPane: 'escape',
+    closeTab: 'control.w'
   }
 }
