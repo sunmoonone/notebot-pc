@@ -1,19 +1,19 @@
 <template>
 <v-app id="app" dark>
   <nb-nav></nb-nav>
-  <router-view></router-view>
+  <nb-main></nb-main>
 </v-app>
 </template>
 
 <script>
 import NavBar from './components/NavBar'
-import Editor from './components/Editor'
+import Main from './components/Main'
 
 export default {
   name: 'notebot',
   components: {
     'nb-nav': NavBar,
-    'nb-editor': Editor
+    'nb-main': Main
   },
   data: () => ({
     items: [{ icon: '$vuetify.icons.cancel', title: 'helloworld' }],

@@ -57,9 +57,6 @@ export default {
 }
 .icon-item{
 	margin-bottom: 15px;
-	&.bottom {
-		margin-bottom: -85px;
-	}
 }
 
 </style>
