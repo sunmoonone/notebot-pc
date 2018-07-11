@@ -10,6 +10,10 @@
   version "0.0.6"
   resolved "http://registry.npm.taobao.org/7zip/download/7zip-0.0.6.tgz#9cafb171af82329490353b4816f03347aa150a30"
 
+"@mdi/font@^2.5.94":
+  version "2.5.94"
+  resolved "http://registry.npm.taobao.org/@mdi/font/download/@mdi/font-2.5.94.tgz#c05415b294243962046c398c8ba0b3a2311cf690"
+
 "@types/node@^8.0.24":
   version "8.10.20"
   resolved "http://registry.npm.taobao.org/@types/node/download/@types/node-8.10.20.tgz#fe674ea52e13950ab10954433a7824438aabbcac"
@@ -5529,10 +5533,6 @@ map-visit@^1.0.0:
   resolved "http://registry.npm.taobao.org/map-visit/download/map-visit-1.0.0.tgz#ecdca8f13144e660f1b5bd41f12f3479d98dfb8f"
   dependencies:
     object-visit "^1.0.0"
-
-material-design-icons-iconfont@^3.0.3:
-  version "3.0.3"
-  resolved "http://registry.npm.taobao.org/material-design-icons-iconfont/download/material-design-icons-iconfont-3.0.3.tgz#154a1084047d4e27237fa7f5a37e1075ceea6df2"
 
 math-expression-evaluator@^1.2.14:
   version "1.2.17"

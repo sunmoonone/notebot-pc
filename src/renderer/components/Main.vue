@@ -16,7 +16,7 @@
           {{ item }}
         </v-tab>
 
-        <v-menu
+        <!-- <v-menu
           v-if="more.length"
           left
         >
@@ -33,7 +33,7 @@
               {{ item }}
             </v-list-tile>
           </v-list>
-        </v-menu>
+        </v-menu> -->
 
     <v-tabs-items v-model="currentItem">
       <v-tab-item
@@ -65,7 +65,6 @@ export default {
   data: () => ({
     currentItem: 'tab-Web',
     items: [
-      'Web', 'Shopping', 'Videos', 'Images'
     ],
     more: [
       'News', 'Maps', 'Books', 'Flights', 'Apps'

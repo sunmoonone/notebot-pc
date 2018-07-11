@@ -23,6 +23,10 @@ export default new Router({
       path: '/profile',
       name: 'profile',
       components: { default: Editor, nav: ProfilePane }
+    },
+    {
+      path: '/',
+      redirect: '/dir'
     }
   ]
 })
