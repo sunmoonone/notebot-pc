@@ -3,7 +3,7 @@ export const DocType = {
   MD: 'markdown',
   TIMEPLAN: 'timeplan',
   TOPICPLAN: 'topicplan',
-  FOLDER: 'FOLDER'
+  FOLDER: 'folder'
 }
 
 /** doc in tabs **/
@@ -50,5 +50,5 @@ export const DirMutations = {
   RENAME: 'RENAME', // rename node
   SELECT_LOADING: 'SELECT_LOADING',
   SELECT_VIEWMODE: 'SELECT_VIEWMODE', // tree or list
-  SELECT_SORTMODE: 'SELECT_SORTMODE'  // sort
+  SELECT_SORTMODE: 'SELECT_SORTMODE' // sort
 }

@@ -1,6 +1,6 @@
 import db from '@/datastore-notes'
-import { SortMode, DirMutations } from '@/consts'
-/** 
+import { DocType, SortMode, DirMutations } from '@/consts'
+/**
  * TreeNode = {
  *   open: false
  *   type: DocType
@@ -8,7 +8,7 @@ import { SortMode, DirMutations } from '@/consts'
  *   name: String
  *   pid: String
  * }
-*/
+ */
 const state = {
   treeModel: {},
   currentNode: null,
@@ -33,114 +33,74 @@ const mutations = {
     }
     state.languageSelected = 'all'
   },
-  SELECT_LOADING (state, loading) {
+  [DirMutations.SELECT] (state, node) {
+    state.currentNode = node
+  },
+  [DirMutations.TOGGLE] (state, node) {
+    if (node.type === DocType.FOLDER) {
+      node.open = !node.open
+    }
+  },
+  [DirMutations.RENAME] (state, payload) {
+    let theNode = state.notes.find(note => note._id === payload.id),
+    payload.node.name = payload.name
+  },
+  [DirMutations.SELECT_VIEWMODE] (state, mode) {
+    state.viewMode = mode
+  },
+  [DirMutations.SELECT_SORTMODE] (state, mode) {
+    state.sortMode = mode
+  },
+  [DirMutations.SELECT_LOADING] (state, loading) {
     state.isLoading = loading
   }
 }
 
 const actions = {
   loadNotes (store) {
-    if (store.state.gistsSelected) {
-      if (store.rootState.Settings.settings.githubPersonalAccessToken) {
-        store.commit('SELECT_LOADING', true)
-        store.commit('LOAD_NOTES', [])
-
-        octokit.authenticate({
-          type: 'token',
-          token: store.rootState.Settings.settings.githubPersonalAccessToken
-        })
-
-        octokit.gists.getAll().then(res => {
-          const promises = []
-
-          res.data.forEach(gist => {
-            promises.push(octokit.gists.get({ id: gist.id }))
-          })
-
-          Promise.all(promises).then(values => {
-            const notes = []
-
-            values.forEach(gistDetailed => {
-              notes.push(converter.gistToNote(gistDetailed.data))
-            })
-
-            store.commit('LOAD_NOTES', notes)
-            store.commit('SELECT_LOADING', false)
-          )
-        })
-      } else {
-        store.commit('LOAD_NOTES', [])
+    store.commit('SELECT_LOADING', true)
+    db.find({}, (err, notes) => {
+      if (!err) {
+        store.commit('LOAD_NOTES', notes)
+        store.commit('SELECT_LOADING', false)
       }
-    } else {
-      store.commit('SELECT_LOADING', true)
-      db.find({}, (err, notes) => {
-        if (!err) {
-          store.commit('LOAD_NOTES', notes)
-          store.commit('SELECT_LOADING', false)
-        }
-      })
-    }
+    })
   },
   addNote (store, note) {
     store.commit('SELECT_LOADING', true)
-    if (store.state.gistsSelected) {
-      octokit.gists.create(note).then(() => {
-        store.dispatch('loadNotes')
-      })
-    } else {
-      db.insert(note, (err, note) => {
-        if (!err) {
-          store.commit('ADD_NOTE', note)
-          store.commit('SELECT_LOADING', false)
-        }
-      })
-    }
+
+    db.insert(note, (err, note) => {
+      if (!err) {
+        store.commit('ADD_NOTE', note)
+        store.commit('SELECT_LOADING', false)
+      }
+    })
   },
   updateNote (store, note) {
-    if (store.state.gistsSelected) {
-      octokit.gists
-        .edit({
-          id: note.id,
-          files: note.files,
-          description: note.description
-        })
-        .then(() => store.dispatch('loadNotes'))
-    } else {
-      db.update({ _id: note._id }, note, {}, err => {
-        if (!err) {
-          store.dispatch('loadNotes')
-        }
-      })
-    }
+    db.update({ _id: note._id }, note, {}, err => {
+      if (!err) {
+        store.dispatch('loadNotes')
+      }
+    })
   },
   deleteNote (store, note) {
     store.commit('SELECT_LOADING', true)
-    if (store.state.gistsSelected) {
-      octokit.gists.delete({ id: note.id }).then(() => {
+
+    db.remove({ _id: note._id }, {}, err => {
+      if (!err) {
         store.commit('DELETE_NOTE', note)
         store.commit('SELECT_LOADING', false)
-      })
-    } else {
-      db.remove({ _id: note._id }, {}, err => {
-        if (!err) {
-          store.commit('DELETE_NOTE', note)
-          store.commit('SELECT_LOADING', false)
-        }
-      })
-    }
-  },
-  selectLanguage (store, language) {
-    store.commit('SELECT_LANGUAGE', language)
-  },
-  selectGists (store, gists) {
-    store.commit('SELECT_GISTS', gists)
-    store.dispatch('loadNotes')
+      }
+    })
   }
 }
 
 const getters = {
   notes: state => state.notes,
   noteById: state => id => state.notes.find(note => note._id === id),
+  nodeById: state => id => {
+
+  },
   languages: state => {
     const map = new Map()
 
@@ -180,4 +140,3 @@ export default {
   actions,
   getters
 }
-
