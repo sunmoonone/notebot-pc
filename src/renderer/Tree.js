@@ -1,3 +1,4 @@
+//todo: rewrite using es6
 function Node (data) {
   this.data = data
   this.parent = null
