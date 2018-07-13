@@ -2,8 +2,7 @@ export const DocType = {
   RICH: 'richtext',
   MD: 'markdown',
   TIMEPLAN: 'timeplan',
-  TOPICPLAN: 'topicplan',
-  FOLDER: 'folder'
+  TOPICPLAN: 'topicplan'
 }
 
 /** doc in tabs **/

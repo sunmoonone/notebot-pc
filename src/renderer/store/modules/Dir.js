@@ -13,43 +13,93 @@ const state = {
   treeModel: {},
   currentNode: null,
   viewMode: 'tree',
-  sortMode: SortMode.NAME_ASC
+  sortMode: SortMode.NAME_ASC,
+  isLoading: false
 }
 
 const mutations = {
-  [DirMutations.LOAD] (state, notes) {
-    state.languageSelected = 'all'
-
-    state.notes = notes
+  [DirMutations.LOAD] (state, tree) {
+    state.treeModel = tree
   },
-  [DirMutations.ADD] (state, note) {
-    state.notes.push(note)
+  [DirMutations.ADD] (state, data) {
+    state.treeModel.insert(data)
   },
-  [DirMutations.DELETE] (state, note) {
-    if (state.gistsSelected) {
-      state.notes = state.notes.filter(n => n.id !== note.id)
-    } else {
-      state.notes = state.notes.filter(n => n._id !== note._id)
+  /**
+   * @param {Object} payload {id:'', trim: true}
+   */
+  [DirMutations.DELETE] (state, payload) {
+    this.treeModel.remove(node => node.data._id === payload.id, payload.trim)
+  },
+  [DirMutations.SELECT] (state, id) {
+    var node = this.treeModel.select(n => n.data._id === id)
+    if (node) {
+      state.currentNode = node
     }
-    state.languageSelected = 'all'
   },
-  [DirMutations.SELECT] (state, node) {
-    state.currentNode = node
-  },
-  [DirMutations.TOGGLE] (state, node) {
-    if (node.type === DocType.FOLDER) {
-      node.open = !node.open
+  [DirMutations.TOGGLE] (state, id) {
+    var node = this.treeModel.first(n => n.data._id === id)
+    if (node && node.children.length > 0) {
+      node.data.open = !node.data.open
     }
   },
   [DirMutations.RENAME] (state, payload) {
-    let theNode = state.notes.find(note => note._id === payload.id),
-    payload.node.name = payload.name
+    let node = this.treeModel.first(n => n.data._id === payload.id)
+    node.data.name = payload.name
   },
   [DirMutations.SELECT_VIEWMODE] (state, mode) {
     state.viewMode = mode
   },
   [DirMutations.SELECT_SORTMODE] (state, mode) {
+    if (mode === state.sortMode) return
     state.sortMode = mode
+
+    if (mode === SortMode.NAME_ASC) {
+      this.treeModel.sort(
+        (n1, n2) =>
+          n1.data.name < n2.data.name ? -1 : n1.data.name > n2.data.name ? 1 : 0
+      )
+    } else if (mode === SortMode.NAME_DESC) {
+      this.treeModel.sort(
+        (n1, n2) =>
+          n1.data.name < n2.data.name ? 1 : n1.data.name > n2.data.name ? -1 : 0
+      )
+    } else if (mode === SortMode.CTIME_ASC) {
+      this.treeModel.sort(
+        (n1, n2) =>
+          n1.data.ctime < n2.data.ctime
+            ? -1
+            : n1.data.ctime > n2.data.ctime
+              ? 1
+              : 0
+      )
+    } else if (mode === SortMode.CTIME_DESC) {
+      this.treeModel.sort(
+        (n1, n2) =>
+          n1.data.ctime < n2.data.ctime
+            ? 1
+            : n1.data.ctime > n2.data.ctime
+              ? -1
+              : 0
+      )
+    } else if (mode === SortMode.UTIME_ASC) {
+      this.treeModel.sort(
+        (n1, n2) =>
+          n1.data.utime < n2.data.utime
+            ? -1
+            : n1.data.utime > n2.data.utime
+              ? 1
+              : 0
+      )
+    } else if (mode === SortMode.UTIME_DESC) {
+      this.treeModel.sort(
+        (n1, n2) =>
+          n1.data.utime < n2.data.utime
+            ? 1
+            : n1.data.utime > n2.data.utime
+              ? -1
+              : 0
+      )
+    }
   },
   [DirMutations.SELECT_LOADING] (state, loading) {
     state.isLoading = loading
@@ -98,9 +148,7 @@ const actions = {
 const getters = {
   notes: state => state.notes,
   noteById: state => id => state.notes.find(note => note._id === id),
-  nodeById: state => id => {
-
-  },
+  nodeById: state => id => {},
   languages: state => {
     const map = new Map()
 

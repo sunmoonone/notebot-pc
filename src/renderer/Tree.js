@@ -93,6 +93,15 @@ export class Tree {
       return this.traverseDF(matcher)
     }
   }
+
+  select (matcher) {
+    var node = this.first(matcher)
+    if (node !== null) {
+      this._current = node
+    }
+    return node
+  }
+
   contains (matcher) {
     return this.first(matcher) !== null
   }
@@ -104,7 +113,19 @@ export class Tree {
    * a == b returns 0
    * the smaller elements get lower index in the sorted array
    */
-  sort (cmpFn) {}
+  sort (cmpFn) {
+    ;(function expand (queue) {
+      while (queue.length) {
+        var current = queue.splice(0, 1)[0]
+        current._children.forEach(function (_child) {
+          queue.push(_child)
+        })
+        if (current._children.length > 0) {
+          current.children.sort(cmpFn)
+        }
+      }
+    })([this._root])
+  }
 
   pruneAll () {
     if (this._root) this.trimBranchFrom(this._root)
@@ -240,16 +261,22 @@ export class Tree {
     return newNode
   }
 
+  remove (matcher, trim) {
+    var node = this.first(matcher)
+    if (node === null) return
+    return this.removeNode(node, trim)
+  }
+
   /**
    * Removes a node from tree and updates `_currentNode` to parent node of node removed.
    *
-   * @method remove
+   * @method removeNode
    * @memberof Tree
    * @instance
    * @param {object} node - {@link TreeNode} that has to be removed.
    * @param {boolean} trim - indicates whether to remove entire branch from the specified node.
    */
-  remove (node, trim) {
+  removeNode (node, trim) {
     if (trim || node === this._root) {
       // Trim Entire branch
       this.trimBranchFrom(node)
