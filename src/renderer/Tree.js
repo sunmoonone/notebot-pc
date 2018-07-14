@@ -1,3 +1,18 @@
+function exportRecur (node) {
+  var exported = node.matchCriteria(criteria)
+  if (!exported || typeof exported !== 'object') {
+    throw new Error(
+      'Export criteria should always return an object and it cannot be null.'
+    )
+  } else {
+    exported.children = []
+    node._childNodes.forEach(function (_child) {
+      exported.children.push(exportRecur(_child))
+    })
+
+    return exported
+  }
+}
 // todo: rewrite using es6
 export class TreeNode {
   constructor (data) {
@@ -21,6 +36,73 @@ export class TreeNode {
       : this._parent._children.filter(function (_child) {
         return _child !== thiss
       })
+  }
+
+  /**
+   * Exports the node data in format specified. It maintains herirachy by adding
+   * additional "children" property to returned value of `criteria` callback.
+   *
+   * @method export
+   * @memberof TreeNode
+   * @instance
+   * @param {TreeNode~criteria} criteria - Callback function that receives data in parameter
+   * and MUST return a formatted data that has to be exported. A new property "children" is added to object returned
+   * that maintains the heirarchy of nodes.
+   * @return {object} - {@link TreeNode}.
+   * @example
+   *
+   * var rootNode = tree.insert({
+   *   key: '#apple',
+   *   value: { name: 'Apple', color: 'Red'}
+   * });
+   *
+   * tree.insert({
+   *   key: '#greenapple',
+   *   value: { name: 'Green Apple', color: 'Green'}
+   * });
+   *
+   * tree.insertToNode(rootNode,  {
+   *  key: '#someanotherapple',
+   *  value: { name: 'Some Apple', color: 'Some Color' }
+   * });
+   *
+   * // Export the tree
+   * var exported = rootNode.export(function(data){
+   *  return { name: data.value.name };
+   * });
+   *
+   * // Result in `exported`
+   * {
+   * "name": "Apple",
+   * "children": [
+   *   {
+   *     "name": "Green Apple",
+   *     "children": []
+   *   },
+   *   {
+   *     "name": "Some Apple",
+   *     "children": []
+   *  }
+   * ]
+   *}
+   *
+   */
+  export (node) {
+    
+  var exported = _.cloneDeep(node._data)
+  if (!exported || typeof exported !== 'object') {
+    throw new Error(
+      'Export criteria should always return an object and it cannot be null.'
+    )
+  } else {
+    exported.children = []
+    node._childNodes.forEach(function (_child) {
+      exported.children.push(exportRecur(_child))
+    })
+
+    return exported
+  }
+    return exportRecur(this)
   }
 }
 
@@ -298,5 +380,87 @@ export class Tree {
       node._parent = null
       node._data = null
     }
+  }
+
+  /**
+   * Imports the JSON data into a tree using the criteria provided.
+   * A property indicating the nesting of object must be specified.
+   *
+   * @method import
+   * @memberof Tree
+   * @instance
+   * @param {object} data - JSON data that has be imported
+   * @param {string} childProperty - Name of the property that holds the nested data.
+   * @param {Tree~criteria} converter - Callback function that receives data in parameter
+   * and MUST return a formatted data that has to be imported in a tree.
+   * @return {object} - {@link Tree}.
+   * @example
+   *
+   * var data = {
+   *   "trailId": "h2e67d4ea-f85f40e2ae4a06f4777864de",
+   *   "initiatedAt": 1448393492488,
+   *   "snapshots": {
+   *      "snapshotId": "b3d132131-213c20f156339ea7bdcb6273",
+   *      "capturedAt": 1448393495353,
+   *      "thumbnail": "data:img",
+   *      "children": [
+   *       {
+   *        "snapshotId": "yeb7ab27c-b36ff1b04aefafa9661243de",
+   *        "capturedAt": 1448393499685,
+   *        "thumbnail": "data:image/",
+   *        "children": [
+   *          {
+   *            "snapshotId": "a00c9828f-e2be0fc4732f56471e77947a",
+   *            "capturedAt": 1448393503061,
+   *            "thumbnail": "data:image/png;base64",
+   *            "children": []
+   *          }
+   *        ]
+   *      }
+   *     ]
+   *   }
+   * };
+   *
+   *  // Import
+   *  // This will result in a tree having nodes containing `id` and `thumbnail` as data
+   *  tree.import(data, 'children', function(nodeData){
+   *    return {
+   *      id: nodeData.snapshotId,
+   *      thumbnail: nodeData.thumbnail
+   *     }
+   *  });
+   *
+   */
+  import (data, childProperty, converter) {
+    // Empty all tree
+    if (this._root) this.trimBranchFrom(this._root)
+
+    // Set Current Node to root node as null
+    this._current = this._root = null
+
+    // Hold `this`
+    var thiss = this
+
+    // Import recursively
+    ;(function importRecur (node, recurData) {
+      // Format data from given criteria
+      var _data = converter(recurData)
+
+      // Create Root Node
+      if (!node) {
+        node = thiss.insert(_data)
+      } else {
+        node = thiss.insertToNode(node, _data)
+      }
+
+      // For Every Child
+      recurData[childProperty].forEach(function (_child) {
+        importRecur(node, _child)
+      })
+    })(this._root, data)
+
+    this._current = this._root
+
+    return this
   }
 }
