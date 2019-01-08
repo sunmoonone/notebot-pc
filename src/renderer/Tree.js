@@ -111,7 +111,7 @@ export class Tree {
    * a < b returns a value less than 0
    * a > b returns a value greater than 0
    * a == b returns 0
-   * the smaller elements get lower index in the sorted array
+   * the smaller elements get lower index in the sorted array of children
    */
   sort (cmpFn) {
     ;(function expand (queue) {
